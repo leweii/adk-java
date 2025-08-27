@@ -18,7 +18,7 @@ public class BuiltInPlanner implements BasePlanner {
     this.cognitiveConfig = cognitiveConfig;
   }
 
-  public BuiltInPlanner buildPlanner(ThinkingConfig cognitiveConfig) {
+  public static BuiltInPlanner buildPlanner(ThinkingConfig cognitiveConfig) {
     return new BuiltInPlanner(cognitiveConfig);
   }
 
@@ -42,14 +42,13 @@ public class BuiltInPlanner implements BasePlanner {
   public LlmRequest applyThinkingConfig(LlmRequest request) {
     if (this.cognitiveConfig != null) {
       // Ensure config exists
-      if (request.config().isEmpty()) {
-        request = request.toBuilder().config(GenerateContentConfig.builder().build()).build();
-      }
+      GenerateContentConfig.Builder configBuilder =
+          request.config().map(GenerateContentConfig::toBuilder).orElse(GenerateContentConfig.builder());
 
       // Apply thinking configuration
       request =
           request.toBuilder()
-              .config(GenerateContentConfig.builder().thinkingConfig(this.cognitiveConfig).build())
+              .config(configBuilder.thinkingConfig(this.cognitiveConfig).build())
               .build();
     }
     return request;
