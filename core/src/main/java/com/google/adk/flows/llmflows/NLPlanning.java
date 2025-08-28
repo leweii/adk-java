@@ -14,6 +14,7 @@ import com.google.genai.types.Content;
 import com.google.genai.types.Part;
 import io.reactivex.rxjava3.core.Single;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -116,7 +117,7 @@ public class NLPlanning {
 
       return Single.just(
           ResponseProcessor.ResponseProcessingResult.create(
-              responseBuilder.build(), eventsBuilder.build(), Optional.empty()));
+              llmResponse, new ArrayList<>(), Optional.empty()));
     }
   }
 

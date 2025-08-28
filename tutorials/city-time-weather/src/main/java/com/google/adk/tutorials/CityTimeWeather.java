@@ -28,10 +28,6 @@ import com.google.genai.types.Part;
 import io.reactivex.rxjava3.core.Flowable;
 
 import java.nio.charset.StandardCharsets;
-import java.text.Normalizer;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
@@ -42,81 +38,42 @@ public class CityTimeWeather {
       LlmAgent.builder()
           .name("multi_tool_agent")
           .model("gemini-2.0-flash-lite")
-          .description("Agent to answer questions about the time and weather in a city.")
+          .description("Agent to answer questions about math.")
           .planner(new PlanReActPlanner())
           .instruction(
-              "You are a helpful agent who can answer user questions about the time and weather in a city.")
+              "You are a helpful agent who can answer user questions about math. you can only use the given tools.")
           .tools(
-              FunctionTool.create(CityTimeWeather.class, "getCurrentTime"),
-              FunctionTool.create(CityTimeWeather.class, "getWeather"),
-              FunctionTool.create(CityTimeWeather.class, "randomInt"))
+              FunctionTool.create(CityTimeWeather.class, "randomInt"),
+              FunctionTool.create(CityTimeWeather.class, "multiply"),
+              FunctionTool.create(CityTimeWeather.class, "guagua"),
+              FunctionTool.create(CityTimeWeather.class, "plus")
+          )
           .build();
 
-  public static Map<String, String> getCurrentTime(
+  public static Map<String, String> multiply(
       @Schema(
-              name = "city",
-              description = "The name of the city for which to retrieve the current time")
-          String city) {
-    String normalizedCity =
-        Normalizer.normalize(city, Normalizer.Form.NFD)
-            .trim()
-            .toLowerCase()
-            .replaceAll("(\\p{IsM}+|\\p{IsP}+)", "")
-            .replaceAll("\\s+", "_");
-
-    return ZoneId.getAvailableZoneIds().stream()
-        .filter(zid -> zid.toLowerCase().endsWith("/" + normalizedCity))
-        .findFirst()
-        .map(
-            zid ->
-                Map.of(
-                    "status",
-                    "success",
-                    "report",
-                    "The current time in "
-                        + city
-                        + " is "
-                        + ZonedDateTime.now(ZoneId.of(zid))
-                            .format(DateTimeFormatter.ofPattern("HH:mm"))
-                        + "."))
-        .orElse(
-            Map.of(
-                "status",
-                "error",
-                "report",
-                "Sorry, I don't have timezone information for " + city + "."));
+          description = "multiple given integers")
+      Integer x, Integer y) {
+    return Map.of(
+        "status", "success", "integer", "" + Math.multiplyExact(x, y));
+  }
+  public static Map<String, String> guagua(
+      @Schema(
+          description = "guagua given integers")
+      Integer x, Integer y) {
+    return Map.of(
+        "status", "success", "integer", "" + Math.subtractExact(x, y));
   }
 
-  public static Map<String, String> getWeather(
+  public static Map<String, String> plus(
       @Schema(
-              name = "city",
-              description = "The name of the city for which to retrieve the weather report")
-          String city) {
-    if (city.equalsIgnoreCase("new york")) {
-      return Map.of(
-          "status",
-          "success",
-          "report",
-          "The weather in New York is sunny with a temperature of 25 degrees Celsius (77 degrees"
-              + " Fahrenheit).");
-
-    } else if(city.equalsIgnoreCase("shanghai")) {
-      return Map.of(
-          "status",
-          "success",
-          "report",
-          "The weather in shang hai is sunny with a temperature of 25 degrees Celsius (77 degrees"
-              + " Fahrenheit).");
-    } else {
-      return Map.of(
-          "status", "error", "report", "Weather information for " + city + " is not available.");
-    }
+          description = "plus given integers")
+      Integer x, Integer y) {
+    return Map.of(
+        "status", "success", "integer", "" + Math.addExact(x, y));
   }
 
-  public static Map<String, String> randomInt(
-      @Schema(
-          description = "generate a random integer")
-      String city) {
+  public static Map<String, String> randomInt() {
     Random random = new Random();
     return Map.of(
         "status", "success", "integer", "" + random.nextInt(100));
